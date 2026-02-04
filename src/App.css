@@ -1,0 +1,7 @@
+.bg-hero {
+  background-image: url('./img/interior5.png'); /* ruta relativa dentro de src */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(0.7); /* oscurece un poco para difuminar */
+}
