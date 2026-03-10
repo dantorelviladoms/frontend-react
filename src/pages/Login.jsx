@@ -1,7 +1,6 @@
 // src/pages/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Footer from "../components/Footer";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -42,14 +41,14 @@ export default function Login() {
   return (
     // Contenidor principal amb fons d'imatge
     <div
-      className="flex min-h-screen items-center justify-center bg-cover bg-center bg-no-repeat"
+      className="relative flex min-h-screen items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: 'url(/img/bglogin.png)' }}
     >
       {/* Overlay opcional */}
-      <div className="absolute inset-0 bg-black/30 bg-opacity-400"></div>
+      <div className="absolute inset-0 bg-black/30"></div>
 
       {/* Formulari centrat */}
-      <div className="relative w-full max-w-md p-8 space-y-6 bg-gray-900 backdrop-blur-sm rounded-xl shadow-xl">
+      <div className="relative z-10 w-full max-w-md p-8 space-y-6 bg-gray-900 backdrop-blur-sm rounded-xl shadow-xl">
         <h2 className="text-2xl font-bold text-center text-white">Iniciar sesión</h2>
 
         {error && (
@@ -95,7 +94,6 @@ export default function Login() {
           </a>
         </p>
       </div>
-      <Footer />
     </div>
   );
 }

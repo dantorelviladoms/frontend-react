@@ -1,7 +1,6 @@
 // src/pages/Register.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Footer from "../components/Footer";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -54,14 +53,14 @@ export default function Register() {
   return (
     // Contenedor principal con fondo de imagen (igual que en Login)
     <div
-      className="flex min-h-screen items-center justify-center bg-cover bg-center bg-no-repeat"
+      className="relative flex min-h-screen items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: 'url(/img/bglogin.png)' }}
     >
       {/* Overlay negro más oscuro */}
       <div className="absolute inset-0 bg-black/80"></div>
 
       {/* Formulario centrado, con mismo estilo que login */}
-      <div className="relative w-full max-w-md p-8 space-y-6 bg-gray-900 backdrop-blur-sm rounded-xl shadow-xl">
+      <div className="relative z-10 w-full max-w-md p-8 space-y-6 bg-gray-900 backdrop-blur-sm rounded-xl shadow-xl">
         <h2 className="text-2xl font-bold text-center text-white">Crear cuenta</h2>
 
         {error && (
@@ -150,7 +149,6 @@ export default function Register() {
           </a>
         </p>
       </div>
-      <Footer />
     </div>
   );
 }
