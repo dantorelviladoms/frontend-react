@@ -1,7 +1,33 @@
-// src/pages/Checkout.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { 
+  CalendarIcon, 
+  MapPinIcon, 
+  SwatchIcon, 
+  LockClosedIcon, 
+  ClipboardDocumentCheckIcon,
+  TruckIcon,
+  ShoppingBagIcon
+} from "@heroicons/react/24/outline";
 import Navbar from "../components/navbar";
+
+// ─── Custom Icons for specific car data ───────────────────────────────────────
+function MileageIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A2 2 0 013 15.488V5.192a2 2 0 012.553-1.91l7.447 2.483 7.447-2.483A2 2 0 0121 5.192v10.296a2 2 0 01-1.553 1.91L15 20m-6-8l6-3m-6 0l6 3m-6 3l6-3" />
+    </svg>
+  );
+}
+
+function FuelIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 16V8m0 0a2 2 0 10-4 0v10m4-10a2 2 0 012 2v1m-7-3V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 11l-3 3m0-3l3 3" />
+    </svg>
+  );
+}
 
 // ─── Stepper indicator ────────────────────────────────────────────────────────
 function Step({ number, label, active, done }) {
@@ -39,7 +65,7 @@ function StepConnector({ done }) {
 
 // ─── Cart item card ───────────────────────────────────────────────────────────
 function CartItem({ item, onRemove, removing }) {
-  const vehicle = item.vehiculo || item;
+  const vehicle = item.id_vehiculo || item;
   const imgSrc =
     vehicle.imageFile && vehicle.imageFile.length > 0
       ? `/img/${vehicle.imageFile[0]}`
@@ -65,12 +91,30 @@ function CartItem({ item, onRemove, removing }) {
           <p className="text-gray-400 text-xs mt-0.5 truncate">{vehicle.version}</p>
         )}
         <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-400">
-          {vehicle.ano && <span>📅 {vehicle.ano}</span>}
-          {vehicle.kilometraje !== undefined && (
-            <span>🛣 {vehicle.kilometraje?.toLocaleString()} km</span>
+          {vehicle.ano && (
+            <span className="flex items-center gap-1">
+              <CalendarIcon className="w-3.5 h-3.5" />
+              {vehicle.ano}
+            </span>
           )}
-          {vehicle.combustible && <span>⛽ {vehicle.combustible}</span>}
-          {vehicle.color && <span>🎨 {vehicle.color}</span>}
+          {vehicle.kilometraje !== undefined && (
+            <span className="flex items-center gap-1">
+              <MileageIcon className="w-3.5 h-3.5" />
+              {vehicle.kilometraje?.toLocaleString()} km
+            </span>
+          )}
+          {vehicle.combustible && (
+            <span className="flex items-center gap-1">
+              <FuelIcon className="w-3.5 h-3.5" />
+              {vehicle.combustible}
+            </span>
+          )}
+          {vehicle.color && (
+            <span className="flex items-center gap-1">
+              <SwatchIcon className="w-3.5 h-3.5" />
+              {vehicle.color}
+            </span>
+          )}
         </div>
       </div>
 
@@ -275,7 +319,7 @@ export default function Checkout() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`http://localhost:5000/api/carrito/${userId}`);
+      const res = await fetch(`http://localhost:5000/api/carrito/usuario/${userId}`);
       const data = await res.json();
       if (data.status === "success") {
         setCartItems(data.data || []);
@@ -309,11 +353,16 @@ export default function Checkout() {
   const handleConfirmPurchase = async () => {
     setConfirming(true);
     try {
-      // Simulate / call purchase endpoint
-      const res = await fetch("http://localhost:5000/api/pedidos", {
+      // Call purchase endpoint
+      const res = await fetch("http://localhost:5000/api/ventas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_usuario: userId, items: cartItems }),
+        body: JSON.stringify({ 
+          id_usuario: userId, 
+          id_producto: cartItems[0]?.id_vehiculo?._id || cartItems[0]?._id,
+          metodo_pago: "tarjeta",
+          precio_final: total
+        }),
       });
       const data = await res.json();
       const order = data.orderNumber || data.numero_pedido || `DTL-${Date.now().toString(36).toUpperCase()}`;
@@ -330,7 +379,7 @@ export default function Checkout() {
 
   // ── Derived totals ──────────────────────────────────────────────────────────
   const subtotal = cartItems.reduce((acc, item) => {
-    const v = item.vehiculo || item;
+    const v = item.id_vehiculo || item;
     return acc + Number(v.precio || 0);
   }, 0);
   const iva = subtotal * 0.21;
@@ -436,11 +485,14 @@ export default function Checkout() {
 
                     {/* Empty */}
                     {!loading && !error && cartItems.length === 0 && (
-                      <div className="text-center py-16">
-                        <div className="text-6xl mb-4">🚗</div>
-                        <p className="text-gray-400 text-sm mb-4">Tu carrito está vacío</p>
+                      <div className="text-center py-16 animate-fadeIn">
+                        <div className="relative mx-auto w-20 h-20 mb-6">
+                            <div className="absolute inset-0 bg-green-500/10 rounded-full animate-pulse" />
+                            <ShoppingBagIcon className="relative w-20 h-20 text-gray-700 mx-auto" />
+                        </div>
+                        <p className="text-gray-400 text-sm mb-6">Tu carrito está vacío</p>
                         <button onClick={() => navigate("/home")}
-                          className="px-6 py-2 bg-green-700 hover:bg-green-600 text-white text-sm rounded-lg transition-colors">
+                          className="px-8 py-2.5 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-all shadow-lg shadow-green-900/20">
                           Ver catálogo
                         </button>
                       </div>
@@ -492,7 +544,7 @@ export default function Checkout() {
                   <div className="space-y-3">
                     {/* Vehicle list in summary */}
                     {cartItems.map((item) => {
-                      const v = item.vehiculo || item;
+                      const v = item.id_vehiculo || item;
                       return (
                         <div key={item._id || item.id} className="flex justify-between text-sm">
                           <span className="text-gray-400 truncate max-w-[60%]">
@@ -526,13 +578,13 @@ export default function Checkout() {
                 )}
 
                 {/* Trust badges */}
-                <div className="mt-6 space-y-2">
+                <div className="mt-6 space-y-3">
                   {[
-                    { icon: "🔒", text: "Pago 100% seguro" },
-                    { icon: "📋", text: "Garantía incluida" },
-                    { icon: "🚚", text: "Entrega a domicilio" },
+                    { icon: <LockClosedIcon className="w-4 h-4 text-green-500" />, text: "Pago 100% seguro" },
+                    { icon: <ClipboardDocumentCheckIcon className="w-4 h-4 text-green-500" />, text: "Garantía incluida" },
+                    { icon: <TruckIcon className="w-4 h-4 text-green-500" />, text: "Entrega a domicilio" },
                   ].map(({ icon, text }) => (
-                    <div key={text} className="flex items-center gap-2 text-xs text-gray-500">
+                    <div key={text} className="flex items-center gap-2.5 text-xs text-gray-400">
                       <span>{icon}</span>
                       <span>{text}</span>
                     </div>
